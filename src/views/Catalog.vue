@@ -1,161 +1,27 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { BuildingOfficeIcon, MapPinIcon, CurrencyEuroIcon, UsersIcon, CalendarIcon } from '@heroicons/vue/24/outline'
+import { BuildingOfficeIcon, MapPinIcon, CurrencyEuroIcon, UsersIcon, CalendarIcon, PlusIcon } from '@heroicons/vue/24/outline'
+import { companies, type Company, getAllIndustries } from '../data/companies'
 
-// Company listings data - easily extendable
-const companies = ref([
-  {
-    id: 1,
-    name: 'TechStart GmbH',
-    industry: 'Software Development',
-    location: 'München-Maxvorstadt',
-    employees: '25-50',
-    founded: '2019',
-    revenue: '2.5M',
-    image: '/WhatsApp Image 2025-09-01 at 21.28.14.jpeg',
-    description: 'Innovative Software-Entwicklung für digitale Lösungen',
-    highlights: [
-      'Agile Entwicklungsmethoden',
-      'Cloud-native Architektur',
-      'Internationale Kunden',
-      'Starkes Wachstum'
-    ],
-    contact: {
-      email: 'info@techstart.de',
-      phone: '+49 89 123 456'
-    }
-  },
-  {
-    id: 2,
-    name: 'Baumeister & Co KG',
-    industry: 'Baugewerbe',
-    location: 'München-Sendling',
-    employees: '100-200',
-    founded: '1995',
-    revenue: '15M',
-    image: '/WhatsApp Image 2025-09-01 at 21.33.23.jpeg',
-    description: 'Traditionelles Bauunternehmen mit moderner Ausrichtung',
-    highlights: [
-      '30 Jahre Erfahrung',
-      'Nachhaltige Bauweise',
-      'Komplettlösungen',
-      'Zertifizierte Qualität'
-    ],
-    contact: {
-      email: 'kontakt@baumeister-co.de',
-      phone: '+49 89 234 567'
-    }
-  },
-  {
-    id: 3,
-    name: 'Green Energy Solutions',
-    industry: 'Erneuerbare Energien',
-    location: 'München-Schwabing',
-    employees: '50-75',
-    founded: '2015',
-    revenue: '8M',
-    image: '/WhatsApp Image 2025-09-01 at 21.35.38.jpeg',
-    description: 'Spezialist für nachhaltige Energielösungen',
-    highlights: [
-      'Photovoltaik-Anlagen',
-      'Energieberatung',
-      'Smart Grid Technologie',
-      'Umweltfreundlich'
-    ],
-    contact: {
-      email: 'info@green-energy.de',
-      phone: '+49 89 345 678'
-    }
-  },
-  {
-    id: 4,
-    name: 'Logistik Pro GmbH',
-    industry: 'Logistik & Transport',
-    location: 'München-Riem',
-    employees: '75-100',
-    founded: '2010',
-    revenue: '12M',
-    image: '/WhatsApp Image 2025-09-01 at 21.35.38 (1).jpeg',
-    description: 'Moderne Logistiklösungen für den E-Commerce',
-    highlights: [
-      'Automatisierte Lager',
-      'Same-Day Delivery',
-      'Nachhaltige Flotte',
-      'Digitale Prozesse'
-    ],
-    contact: {
-      email: 'service@logistik-pro.de',
-      phone: '+49 89 456 789'
-    }
-  },
-  {
-    id: 5,
-    name: 'MedTech Innovations',
-    industry: 'Medizintechnik',
-    location: 'München-Bogenhausen',
-    employees: '30-50',
-    founded: '2018',
-    revenue: '5M',
-    image: '/WhatsApp Image 2025-09-01 at 21.33.23 (1).jpeg',
-    description: 'Entwicklung innovativer Medizingeräte',
-    highlights: [
-      'FDA-zugelassene Produkte',
-      'Forschung & Entwicklung',
-      'Internationale Märkte',
-      'Patentierte Technologien'
-    ],
-    contact: {
-      email: 'info@medtech-innovations.de',
-      phone: '+49 89 567 890'
-    }
-  },
-  {
-    id: 6,
-    name: 'Gastro Excellence',
-    industry: 'Gastronomie',
-    location: 'München-Altstadt',
-    employees: '20-30',
-    founded: '2012',
-    revenue: '3M',
-    image: '/WhatsApp Image 2025-09-01 at 21.35.38 (1) copy.jpeg',
-    description: 'Premium Gastronomie-Konzepte',
-    highlights: [
-      'Mehrere Standorte',
-      'Regionale Küche',
-      'Nachhaltigkeit',
-      'Ausgezeichnete Qualität'
-    ],
-    contact: {
-      email: 'info@gastro-excellence.de',
-      phone: '+49 89 678 901'
-    }
-  }
-])
-
-const selectedCompany = ref<typeof companies.value[0] | null>(null)
+const selectedCompany = ref<Company | null>(null)
 const searchTerm = ref('')
 const selectedIndustry = ref('')
 
-const industries = computed(() => {
-  const uniqueIndustries = [...new Set(companies.value.map(c => c.industry))]
-  return uniqueIndustries.sort()
-})
+const industries = computed(() => getAllIndustries())
 
 const filteredCompanies = computed(() => {
-  return companies.value.filter(company => {
+  return companies.filter(company => {
     const matchesSearch = company.name.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
-                         company.description.toLowerCase().includes(searchTerm.value.toLowerCase())
+                         company.description.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
+                         company.industry.toLowerCase().includes(searchTerm.value.toLowerCase())
     const matchesIndustry = !selectedIndustry.value || company.industry === selectedIndustry.value
     return matchesSearch && matchesIndustry
   })
 })
 
-// Function to add new companies (for easy extension)
-const addCompany = (newCompany: typeof companies.value[0]) => {
-  companies.value.push({
-    ...newCompany,
-    id: Math.max(...companies.value.map(c => c.id)) + 1
-  })
+const clearFilters = () => {
+  searchTerm.value = ''
+  selectedIndustry.value = ''
 }
 </script>
 
@@ -170,7 +36,7 @@ const addCompany = (newCompany: typeof companies.value[0]) => {
           </h1>
           <p class="text-lg text-gray-600 max-w-3xl mx-auto">
             Entdecken Sie etablierte Unternehmen und Geschäftsmöglichkeiten in München und Umgebung. 
-            Wir vermitteln zwischen Käufern und Verkäufern von Firmen und Gewerbeimmobilien.
+            Wir vermitteln zwischen Käufern und Verkäufern von Firmen und unterstützen bei Nachfolgeregelungen.
           </p>
         </div>
       </div>
@@ -179,19 +45,19 @@ const addCompany = (newCompany: typeof companies.value[0]) => {
     <!-- Filters -->
     <section class="py-8 bg-white border-b">
       <div class="mx-auto max-w-6xl px-4">
-        <div class="flex flex-col md:flex-row gap-4">
+        <div class="flex flex-col md:flex-row gap-4 items-center">
           <div class="flex-1">
             <input 
               v-model="searchTerm"
               type="text" 
-              placeholder="Firmenname oder Beschreibung suchen..."
-              class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              placeholder="Firmenname, Branche oder Beschreibung suchen..."
+              class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors duration-200"
             />
           </div>
           <div class="md:w-64">
             <select 
               v-model="selectedIndustry"
-              class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors duration-200"
             >
               <option value="">Alle Branchen</option>
               <option v-for="industry in industries" :key="industry" :value="industry">
@@ -199,6 +65,17 @@ const addCompany = (newCompany: typeof companies.value[0]) => {
               </option>
             </select>
           </div>
+          <button 
+            v-if="searchTerm || selectedIndustry"
+            @click="clearFilters"
+            class="btn-secondary whitespace-nowrap"
+          >
+            Filter zurücksetzen
+          </button>
+        </div>
+        
+        <div class="mt-4 text-sm text-gray-600">
+          {{ filteredCompanies.length }} von {{ companies.length }} Unternehmen
         </div>
       </div>
     </section>
@@ -210,7 +87,7 @@ const addCompany = (newCompany: typeof companies.value[0]) => {
           <div 
             v-for="company in filteredCompanies" 
             :key="company.id"
-            class="card overflow-hidden group cursor-pointer hover:shadow-xl transition-all duration-300"
+            class="card overflow-hidden group cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
             @click="selectedCompany = company"
           >
             <div class="relative overflow-hidden">
@@ -222,6 +99,9 @@ const addCompany = (newCompany: typeof companies.value[0]) => {
               <div class="absolute top-3 left-3 bg-primary-600 text-white px-3 py-1 rounded-full text-xs font-medium">
                 {{ company.industry }}
               </div>
+              <div class="absolute top-3 right-3 bg-white/90 backdrop-blur-sm text-gray-700 px-2 py-1 rounded text-xs font-medium">
+                {{ company.employees }} MA
+              </div>
             </div>
             
             <div class="p-6">
@@ -229,19 +109,15 @@ const addCompany = (newCompany: typeof companies.value[0]) => {
                 {{ company.name }}
               </h3>
               
-              <p class="text-gray-600 mb-4 text-sm">{{ company.description }}</p>
+              <p class="text-gray-600 mb-4 text-sm line-clamp-2">{{ company.description }}</p>
               
               <div class="space-y-2 mb-4">
                 <div class="flex items-center text-gray-500 text-sm">
-                  <MapPinIcon class="w-4 h-4 mr-2" />
+                  <MapPinIcon class="w-4 h-4 mr-2 flex-shrink-0" />
                   {{ company.location }}
                 </div>
                 <div class="flex items-center text-gray-500 text-sm">
-                  <UsersIcon class="w-4 h-4 mr-2" />
-                  {{ company.employees }} Mitarbeiter
-                </div>
-                <div class="flex items-center text-gray-500 text-sm">
-                  <CalendarIcon class="w-4 h-4 mr-2" />
+                  <CalendarIcon class="w-4 h-4 mr-2 flex-shrink-0" />
                   Gegründet {{ company.founded }}
                 </div>
               </div>
@@ -250,10 +126,13 @@ const addCompany = (newCompany: typeof companies.value[0]) => {
                 <div class="flex items-center">
                   <CurrencyEuroIcon class="w-5 h-5 text-primary-600 mr-1" />
                   <span class="text-lg font-bold text-primary-600">{{ company.revenue }}</span>
-                  <span class="text-sm text-gray-500 ml-1">Umsatz</span>
+                  <span class="text-sm text-gray-500 ml-1">p.a.</span>
                 </div>
-                <button class="text-primary-600 hover:text-primary-700 font-medium text-sm">
-                  Details →
+                <button class="text-primary-600 hover:text-primary-700 font-medium text-sm flex items-center">
+                  Details
+                  <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  </svg>
                 </button>
               </div>
             </div>
@@ -262,18 +141,23 @@ const addCompany = (newCompany: typeof companies.value[0]) => {
         
         <!-- Add Company CTA -->
         <div class="mt-12 text-center">
-          <div class="card p-8 max-w-2xl mx-auto">
-            <BuildingOfficeIcon class="w-12 h-12 text-primary-600 mx-auto mb-4" />
+          <div class="card p-8 max-w-2xl mx-auto bg-gradient-to-br from-primary-50 to-white">
+            <PlusIcon class="w-12 h-12 text-primary-600 mx-auto mb-4" />
             <h3 class="text-xl font-semibold text-gray-900 mb-2">
               Ihr Unternehmen im Katalog
             </h3>
-            <p class="text-gray-600 mb-4">
+            <p class="text-gray-600 mb-6">
               Möchten Sie Ihr Unternehmen verkaufen oder sind auf der Suche nach einem Nachfolger? 
-              Wir helfen Ihnen dabei, die richtige Lösung zu finden.
+              Wir helfen Ihnen dabei, die richtige Lösung zu finden und vermitteln seriöse Interessenten.
             </p>
-            <router-link to="/kontakt" class="btn-primary">
-              Unternehmen eintragen
-            </router-link>
+            <div class="flex flex-col sm:flex-row gap-3 justify-center">
+              <router-link to="/kontakt" class="btn-primary">
+                Unternehmen eintragen
+              </router-link>
+              <router-link to="/dienstleistungen" class="btn-secondary">
+                Mehr über Firmenvermittlung
+              </router-link>
+            </div>
           </div>
         </div>
       </div>
@@ -303,15 +187,25 @@ const addCompany = (newCompany: typeof companies.value[0]) => {
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
+          <div class="absolute bottom-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full">
+            <span class="text-sm font-medium text-gray-700">{{ selectedCompany.industry }}</span>
+          </div>
         </div>
         
         <div class="p-8">
-          <div class="mb-6">
-            <span class="inline-block bg-primary-100 text-primary-800 px-3 py-1 rounded-full text-sm font-medium mb-3">
-              {{ selectedCompany.industry }}
-            </span>
+          <div class="mb-8">
             <h2 class="text-3xl font-bold text-gray-900 mb-2">{{ selectedCompany.name }}</h2>
-            <p class="text-lg text-gray-600">{{ selectedCompany.description }}</p>
+            <p class="text-lg text-gray-600 mb-4">{{ selectedCompany.description }}</p>
+            
+            <div class="flex flex-wrap gap-2">
+              <span 
+                v-for="highlight in selectedCompany.highlights" 
+                :key="highlight"
+                class="bg-primary-100 text-primary-800 px-3 py-1 rounded-full text-sm"
+              >
+                {{ highlight }}
+              </span>
+            </div>
           </div>
           
           <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
@@ -334,38 +228,64 @@ const addCompany = (newCompany: typeof companies.value[0]) => {
                   <CurrencyEuroIcon class="w-5 h-5 text-gray-400 mr-3" />
                   <span class="text-gray-600">{{ selectedCompany.revenue }} Jahresumsatz</span>
                 </div>
+                <div v-if="selectedCompany.details?.legalForm" class="flex items-center">
+                  <BuildingOfficeIcon class="w-5 h-5 text-gray-400 mr-3" />
+                  <span class="text-gray-600">{{ selectedCompany.details.legalForm }}</span>
+                </div>
               </div>
             </div>
             
             <div>
-              <h3 class="text-lg font-semibold text-gray-900 mb-4">Besonderheiten</h3>
-              <ul class="space-y-2">
+              <h3 class="text-lg font-semibold text-gray-900 mb-4">Spezialisierungen</h3>
+              <ul class="space-y-2 mb-6">
                 <li 
-                  v-for="highlight in selectedCompany.highlights" 
-                  :key="highlight"
+                  v-for="specialty in selectedCompany.details?.specialties || []" 
+                  :key="specialty"
                   class="flex items-center text-gray-600"
                 >
                   <div class="w-2 h-2 bg-primary-500 rounded-full mr-3"></div>
-                  {{ highlight }}
+                  {{ specialty }}
                 </li>
               </ul>
+              
+              <div v-if="selectedCompany.details?.certifications?.length">
+                <h4 class="font-medium text-gray-900 mb-2">Zertifizierungen</h4>
+                <div class="flex flex-wrap gap-2">
+                  <span 
+                    v-for="cert in selectedCompany.details.certifications" 
+                    :key="cert"
+                    class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs"
+                  >
+                    {{ cert }}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
           
           <div class="border-t pt-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+              <div class="p-4 bg-gray-50 rounded-lg">
+                <h4 class="font-medium text-gray-900 mb-1">Telefon</h4>
+                <a :href="`tel:${selectedCompany.contact.phone}`" class="text-primary-600 hover:text-primary-700">
+                  {{ selectedCompany.contact.phone }}
+                </a>
+              </div>
+              <div class="p-4 bg-gray-50 rounded-lg">
+                <h4 class="font-medium text-gray-900 mb-1">E-Mail</h4>
+                <a :href="`mailto:${selectedCompany.contact.email}`" class="text-primary-600 hover:text-primary-700">
+                  {{ selectedCompany.contact.email }}
+                </a>
+              </div>
+            </div>
+            
             <div class="flex flex-col sm:flex-row gap-4">
-              <button class="btn-primary flex-1">
+              <router-link to="/kontakt" class="btn-primary flex-1 text-center">
                 Interesse bekunden
-              </button>
+              </router-link>
               <button class="btn-secondary">
-                Weitere Informationen
+                Weitere Informationen anfordern
               </button>
-              <a 
-                :href="`mailto:${selectedCompany.contact.email}`"
-                class="btn-secondary text-center"
-              >
-                Direktkontakt
-              </a>
             </div>
           </div>
         </div>
@@ -373,3 +293,12 @@ const addCompany = (newCompany: typeof companies.value[0]) => {
     </div>
   </div>
 </template>
+
+<style scoped>
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+</style>
