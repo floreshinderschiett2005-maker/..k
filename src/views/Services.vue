@@ -221,5 +221,5 @@ const services = [
         </div>
       </div>
     </section>
-  </section>
+  </div>
 </template>
