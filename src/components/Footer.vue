@@ -3,22 +3,22 @@ const currentYear = new Date().getFullYear()
 
 const footerLinks = {
   services: [
-    { name: 'Immobilienvermittlung', href: '#services' },
-    { name: 'Finanzierungsberatung', href: '#services' },
-    { name: 'Verkaufsexposés', href: '#services' },
-    { name: 'Versicherungsanalyse', href: '#services' }
+    { name: 'Immobilienvermittlung', to: '/dienstleistungen' },
+    { name: 'Finanzierungsberatung', to: '/dienstleistungen' },
+    { name: 'Verkaufsexposés', to: '/dienstleistungen' },
+    { name: 'Versicherungsanalyse', to: '/dienstleistungen' }
   ],
   company: [
-    { name: 'Über uns', href: '#about' },
-    { name: 'Karriere', href: '#' },
-    { name: 'Presse', href: '#' },
-    { name: 'Partner', href: '#' }
+    { name: 'Über uns', to: '/ueber-uns' },
+    { name: 'Karriere', to: '/kontakt' },
+    { name: 'Presse', to: '/kontakt' },
+    { name: 'Partner', to: '/kontakt' }
   ],
   legal: [
-    { name: 'Impressum', href: '#' },
-    { name: 'Datenschutz', href: '#' },
-    { name: 'AGB', href: '#' },
-    { name: 'Cookie-Richtlinie', href: '#' }
+    { name: 'Impressum', to: '/kontakt' },
+    { name: 'Datenschutz', to: '/kontakt' },
+    { name: 'AGB', to: '/kontakt' },
+    { name: 'Cookie-Richtlinie', to: '/kontakt' }
   ]
 }
 </script>
@@ -60,9 +60,9 @@ const footerLinks = {
           <h3 class="text-base font-semibold mb-3">Dienstleistungen</h3>
           <ul class="space-y-1">
             <li v-for="link in footerLinks.services" :key="link.name">
-              <a :href="link.href" class="text-gray-300 hover:text-white transition-colors duration-200 text-sm">
+              <router-link :to="link.to" class="text-gray-300 hover:text-white transition-colors duration-200 text-sm">
                 {{ link.name }}
-              </a>
+              </router-link>
             </li>
           </ul>
         </div>
@@ -72,9 +72,9 @@ const footerLinks = {
           <h3 class="text-base font-semibold mb-3">Unternehmen</h3>
           <ul class="space-y-1">
             <li v-for="link in footerLinks.company" :key="link.name">
-              <a :href="link.href" class="text-gray-300 hover:text-white transition-colors duration-200 text-sm">
+              <router-link :to="link.to" class="text-gray-300 hover:text-white transition-colors duration-200 text-sm">
                 {{ link.name }}
-              </a>
+              </router-link>
             </li>
           </ul>
         </div>
@@ -84,9 +84,9 @@ const footerLinks = {
           <h3 class="text-base font-semibold mb-3">Rechtliches</h3>
           <ul class="space-y-1">
             <li v-for="link in footerLinks.legal" :key="link.name">
-              <a :href="link.href" class="text-gray-300 hover:text-white transition-colors duration-200 text-sm">
+              <router-link :to="link.to" class="text-gray-300 hover:text-white transition-colors duration-200 text-sm">
                 {{ link.name }}
-              </a>
+              </router-link>
             </li>
           </ul>
         </div>

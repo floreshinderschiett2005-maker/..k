@@ -17,20 +17,20 @@ import { ArrowRightIcon } from '@heroicons/vue/24/outline'
             Von der Bewertung bis zum Notarvertrag - wir begleiten Sie durch den gesamten Prozess.
           </p>
           <div class="mt-6 flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
-            <a href="#services" class="btn-primary inline-flex items-center">
+            <router-link to="/dienstleistungen" class="btn-primary inline-flex items-center">
               Unsere Services
               <ArrowRightIcon class="ml-2 h-4 w-4" />
-            </a>
-            <a href="#catalog" class="btn-secondary">
+            </router-link>
+            <router-link to="/katalog" class="btn-secondary">
               Aktuelle Angebote
-            </a>
+            </router-link>
           </div>
         </div>
         
         <div class="relative">
           <div class="rounded-xl overflow-hidden shadow-xl">
             <img 
-              src="https://images.pexels.com/photos/106399/pexels-photo-106399.jpeg?auto=compress&cs=tinysrgb&w=800" 
+              src="/WhatsApp Image 2025-09-01 at 21.35.38 (1).jpeg" 
               alt="Moderne Immobilie" 
               class="w-full h-64 lg:h-80 object-cover"
             />
