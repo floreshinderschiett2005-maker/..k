@@ -60,6 +60,45 @@ const subjects = [
   { value: 'valuation', label: 'Immobilienbewertung' },
   { value: 'financing', label: 'Finanzierungsberatung' }
 ]
+
+const team = [
+  {
+    name: 'Michael Weber',
+    role: 'Geschäftsführer',
+    image: '/WhatsApp Image 2025-09-01 at 21.33.23 copy.jpeg',
+    description: 'Über 20 Jahre Erfahrung in der Immobilienbranche'
+  },
+  {
+    name: 'Sarah Müller',
+    role: 'Leiterin Firmenvermittlung',
+    image: '/WhatsApp Image 2025-09-01 at 21.28.14.jpeg',
+    description: 'Spezialistin für Unternehmenstransaktionen'
+  },
+  {
+    name: 'Thomas Schmidt',
+    role: 'Senior Immobilienmakler',
+    image: '/WhatsApp Image 2025-09-01 at 21.35.38.jpeg',
+    description: 'Experte für Gewerbeimmobilien'
+  }
+]
+
+const stats = [
+  { 
+    icon: () => import('@heroicons/vue/24/solid').then(m => m.TrophyIcon), 
+    number: '500+', 
+    label: 'Erfolgreiche Vermittlungen' 
+  },
+  { 
+    icon: () => import('@heroicons/vue/24/solid').then(m => m.UserGroupIcon), 
+    number: '15+', 
+    label: 'Jahre Erfahrung' 
+  },
+  { 
+    icon: () => import('@heroicons/vue/24/solid').then(m => m.HeartIcon), 
+    number: '98%', 
+    label: 'Kundenzufriedenheit' 
+  }
+]
 </script>
 
 <template>

@@ -15,9 +15,9 @@ const footerLinks = {
     { name: 'Partner', to: '/kontakt' }
   ],
   legal: [
-    { name: 'Impressum', to: '/kontakt' },
+    { name: 'Impressum', to: '/agb' },
     { name: 'Datenschutz', to: '/kontakt' },
-    { name: 'AGB', to: '/kontakt' },
+    { name: 'AGB', to: '/agb' },
     { name: 'Cookie-Richtlinie', to: '/kontakt' }
   ]
 }

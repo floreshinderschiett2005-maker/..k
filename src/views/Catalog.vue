@@ -1,13 +1,19 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { BuildingOfficeIcon, MapPinIcon, CurrencyEuroIcon, UsersIcon, CalendarIcon, PlusIcon } from '@heroicons/vue/24/outline'
+import { BuildingOfficeIcon, MapPinIcon, CurrencyEuroIcon, UsersIcon, CalendarIcon, PlusIcon, HomeIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/vue/24/outline'
 import { companies, type Company, getAllIndustries } from '../data/companies'
+import { properties, type Property, getAllPropertyTypes } from '../data/properties'
 
 const selectedCompany = ref<Company | null>(null)
+const selectedProperty = ref<Property | null>(null)
 const searchTerm = ref('')
 const selectedIndustry = ref('')
+const selectedPropertyType = ref('')
+const activeTab = ref<'companies' | 'properties'>('properties')
+const currentImageIndex = ref(0)
 
 const industries = computed(() => getAllIndustries())
+const propertyTypes = computed(() => getAllPropertyTypes())
 
 const filteredCompanies = computed(() => {
   return companies.filter(company => {
@@ -19,9 +25,40 @@ const filteredCompanies = computed(() => {
   })
 })
 
+const filteredProperties = computed(() => {
+  return properties.filter(property => {
+    const matchesSearch = property.title.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
+                         property.description.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
+                         property.type.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
+                         property.location.toLowerCase().includes(searchTerm.value.toLowerCase())
+    const matchesType = !selectedPropertyType.value || property.type === selectedPropertyType.value
+    return matchesSearch && matchesType
+  })
+})
+
 const clearFilters = () => {
   searchTerm.value = ''
   selectedIndustry.value = ''
+  selectedPropertyType.value = ''
+}
+
+const nextImage = () => {
+  if (selectedProperty.value) {
+    currentImageIndex.value = (currentImageIndex.value + 1) % selectedProperty.value.images.length
+  }
+}
+
+const prevImage = () => {
+  if (selectedProperty.value) {
+    currentImageIndex.value = currentImageIndex.value === 0 
+      ? selectedProperty.value.images.length - 1 
+      : currentImageIndex.value - 1
+  }
+}
+
+const openPropertyModal = (property: Property) => {
+  selectedProperty.value = property
+  currentImageIndex.value = 0
 }
 </script>
 
@@ -32,12 +69,45 @@ const clearFilters = () => {
       <div class="mx-auto max-w-6xl px-4">
         <div class="text-center">
           <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-            Firmenkatalog
+            Katalog
           </h1>
           <p class="text-lg text-gray-600 max-w-3xl mx-auto">
-            Entdecken Sie etablierte Unternehmen und Geschäftsmöglichkeiten in München und Umgebung. 
-            Wir vermitteln zwischen Käufern und Verkäufern von Firmen und unterstützen bei Nachfolgeregelungen.
+            Entdecken Sie aktuelle Immobilienangebote und etablierte Unternehmen in München und Umgebung.
           </p>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Tabs -->
+    <section class="py-6 bg-white border-b">
+      <div class="mx-auto max-w-6xl px-4">
+        <div class="flex justify-center">
+          <div class="flex bg-gray-100 rounded-lg p-1">
+            <button 
+              @click="activeTab = 'properties'"
+              :class="[
+                'px-6 py-2 rounded-md font-medium transition-all duration-200 flex items-center',
+                activeTab === 'properties' 
+                  ? 'bg-white text-primary-600 shadow-sm' 
+                  : 'text-gray-600 hover:text-gray-900'
+              ]"
+            >
+              <HomeIcon class="w-4 h-4 mr-2" />
+              Immobilien
+            </button>
+            <button 
+              @click="activeTab = 'companies'"
+              :class="[
+                'px-6 py-2 rounded-md font-medium transition-all duration-200 flex items-center',
+                activeTab === 'companies' 
+                  ? 'bg-white text-primary-600 shadow-sm' 
+                  : 'text-gray-600 hover:text-gray-900'
+              ]"
+            >
+              <BuildingOfficeIcon class="w-4 h-4 mr-2" />
+              Unternehmen
+            </button>
+          </div>
         </div>
       </div>
     </section>
@@ -50,12 +120,23 @@ const clearFilters = () => {
             <input 
               v-model="searchTerm"
               type="text" 
-              placeholder="Firmenname, Branche oder Beschreibung suchen..."
+              :placeholder="activeTab === 'properties' ? 'Immobilie, Lage oder Typ suchen...' : 'Firmenname, Branche oder Beschreibung suchen...'"
               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors duration-200"
             />
           </div>
           <div class="md:w-64">
             <select 
+              v-if="activeTab === 'properties'"
+              v-model="selectedPropertyType"
+              class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors duration-200"
+            >
+              <option value="">Alle Immobilientypen</option>
+              <option v-for="type in propertyTypes" :key="type" :value="type">
+                {{ type }}
+              </option>
+            </select>
+            <select 
+              v-else
               v-model="selectedIndustry"
               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-colors duration-200"
             >
@@ -66,7 +147,7 @@ const clearFilters = () => {
             </select>
           </div>
           <button 
-            v-if="searchTerm || selectedIndustry"
+            v-if="searchTerm || selectedIndustry || selectedPropertyType"
             @click="clearFilters"
             class="btn-secondary whitespace-nowrap"
           >
@@ -75,13 +156,67 @@ const clearFilters = () => {
         </div>
         
         <div class="mt-4 text-sm text-gray-600">
-          {{ filteredCompanies.length }} von {{ companies.length }} Unternehmen
+          <span v-if="activeTab === 'properties'">
+            {{ filteredProperties.length }} von {{ properties.length }} Immobilien
+          </span>
+          <span v-else>
+            {{ filteredCompanies.length }} von {{ companies.length }} Unternehmen
+          </span>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Properties Grid -->
+    <section v-if="activeTab === 'properties'" class="py-12 bg-gray-50">
+      <div class="mx-auto max-w-6xl px-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div 
+            v-for="property in filteredProperties" 
+            :key="property.id"
+            class="card overflow-hidden group cursor-pointer hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+            @click="openPropertyModal(property)"
+          >
+            <div class="relative overflow-hidden">
+              <img 
+                :src="property.images[0]" 
+                :alt="property.title"
+                class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+              <div class="absolute top-3 left-3 bg-primary-600 text-white px-3 py-1 rounded-full text-xs font-medium">
+                {{ property.type }}
+              </div>
+              <div class="absolute top-3 right-3 bg-white/90 backdrop-blur-sm text-gray-700 px-2 py-1 rounded text-xs font-medium">
+                {{ property.images.length }} Bilder
+              </div>
+            </div>
+            
+            <div class="p-6">
+              <h3 class="text-xl font-semibold text-gray-900 mb-2 group-hover:text-primary-600 transition-colors duration-200">
+                {{ property.title }}
+              </h3>
+              
+              <div class="flex items-center text-gray-600 mb-3">
+                <MapPinIcon class="w-4 h-4 mr-2" />
+                <span class="text-sm">{{ property.location }}</span>
+              </div>
+              
+              <div class="flex justify-between items-center">
+                <div class="flex items-center">
+                  <CurrencyEuroIcon class="w-5 h-5 text-primary-600 mr-1" />
+                  <span class="text-lg font-bold text-primary-600">{{ property.price }}</span>
+                </div>
+                <div class="text-sm text-gray-500">
+                  {{ property.size }}m² • {{ property.rooms }} Zimmer
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
     
     <!-- Companies Grid -->
-    <section class="py-12 bg-gray-50">
+    <section v-else class="py-12 bg-gray-50">
       <div class="mx-auto max-w-6xl px-4">
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <div 
@@ -162,6 +297,186 @@ const clearFilters = () => {
         </div>
       </div>
     </section>
+    
+    <!-- Property Detail Modal -->
+    <div 
+      v-if="selectedProperty" 
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+      @click="selectedProperty = null"
+    >
+      <div 
+        class="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+        @click.stop
+      >
+        <!-- Image Gallery -->
+        <div class="relative">
+          <div class="relative h-80 overflow-hidden">
+            <img 
+              :src="selectedProperty.images[currentImageIndex]" 
+              :alt="selectedProperty.title"
+              class="w-full h-full object-cover"
+            />
+            
+            <!-- Navigation Arrows -->
+            <button 
+              v-if="selectedProperty.images.length > 1"
+              @click="prevImage"
+              class="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/80 backdrop-blur-sm rounded-full p-2 shadow-lg hover:bg-white transition-colors duration-200"
+            >
+              <ChevronLeftIcon class="w-5 h-5 text-gray-700" />
+            </button>
+            <button 
+              v-if="selectedProperty.images.length > 1"
+              @click="nextImage"
+              class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/80 backdrop-blur-sm rounded-full p-2 shadow-lg hover:bg-white transition-colors duration-200"
+            >
+              <ChevronRightIcon class="w-5 h-5 text-gray-700" />
+            </button>
+            
+            <!-- Image Counter -->
+            <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
+              {{ currentImageIndex + 1 }} / {{ selectedProperty.images.length }}
+            </div>
+            
+            <!-- Close Button -->
+            <button 
+              @click="selectedProperty = null"
+              class="absolute top-4 right-4 bg-white rounded-full p-2 shadow-lg hover:bg-gray-50 transition-colors duration-200"
+            >
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          
+          <!-- Image Thumbnails -->
+          <div v-if="selectedProperty.images.length > 1" class="flex space-x-2 p-4 bg-gray-50 overflow-x-auto">
+            <button
+              v-for="(image, index) in selectedProperty.images"
+              :key="index"
+              @click="currentImageIndex = index"
+              :class="[
+                'flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all duration-200',
+                currentImageIndex === index ? 'border-primary-500' : 'border-gray-200 hover:border-gray-300'
+              ]"
+            >
+              <img :src="image" :alt="`Bild ${index + 1}`" class="w-full h-full object-cover" />
+            </button>
+          </div>
+        </div>
+        
+        <div class="p-8">
+          <div class="mb-8">
+            <div class="flex items-center mb-2">
+              <span class="inline-block bg-primary-100 text-primary-800 px-3 py-1 rounded-full text-sm font-medium mr-3">
+                {{ selectedProperty.type }}
+              </span>
+              <span class="text-sm text-gray-500">{{ selectedProperty.location }}</span>
+            </div>
+            <h2 class="text-3xl font-bold text-gray-900 mb-4">{{ selectedProperty.title }}</h2>
+            <p class="text-lg text-gray-600 mb-6">{{ selectedProperty.description }}</p>
+            
+            <div class="flex flex-wrap gap-2 mb-6">
+              <span 
+                v-for="feature in selectedProperty.features" 
+                :key="feature"
+                class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm"
+              >
+                {{ feature }}
+              </span>
+            </div>
+          </div>
+          
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+            <div>
+              <h3 class="text-lg font-semibold text-gray-900 mb-4">Objektdaten</h3>
+              <div class="space-y-3">
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Wohnfläche:</span>
+                  <span class="font-medium">{{ selectedProperty.size }}m²</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Zimmer:</span>
+                  <span class="font-medium">{{ selectedProperty.rooms }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-600">Kaufpreis:</span>
+                  <span class="font-bold text-primary-600">€{{ selectedProperty.price }}</span>
+                </div>
+                <div v-if="selectedProperty.details.yearBuilt" class="flex justify-between">
+                  <span class="text-gray-600">Baujahr:</span>
+                  <span class="font-medium">{{ selectedProperty.details.yearBuilt }}</span>
+                </div>
+                <div v-if="selectedProperty.details.condition" class="flex justify-between">
+                  <span class="text-gray-600">Zustand:</span>
+                  <span class="font-medium">{{ selectedProperty.details.condition }}</span>
+                </div>
+                <div v-if="selectedProperty.details.heating" class="flex justify-between">
+                  <span class="text-gray-600">Heizung:</span>
+                  <span class="font-medium">{{ selectedProperty.details.heating }}</span>
+                </div>
+              </div>
+            </div>
+            
+            <div>
+              <h3 class="text-lg font-semibold text-gray-900 mb-4">Ausstattung</h3>
+              <div class="space-y-2">
+                <div v-if="selectedProperty.details.garden" class="flex items-center text-green-600">
+                  <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                  </svg>
+                  Garten vorhanden
+                </div>
+                <div v-if="selectedProperty.details.balcony" class="flex items-center text-green-600">
+                  <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                  </svg>
+                  Balkon/Terrasse
+                </div>
+                <div v-if="selectedProperty.details.elevator" class="flex items-center text-green-600">
+                  <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                  </svg>
+                  Aufzug vorhanden
+                </div>
+                <div v-if="selectedProperty.details.parking" class="flex items-center text-green-600">
+                  <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                  </svg>
+                  {{ selectedProperty.details.parking }}
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="border-t pt-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+              <div class="p-4 bg-gray-50 rounded-lg">
+                <h4 class="font-medium text-gray-900 mb-1">Telefon</h4>
+                <a :href="`tel:${selectedProperty.contact.phone}`" class="text-primary-600 hover:text-primary-700">
+                  {{ selectedProperty.contact.phone }}
+                </a>
+              </div>
+              <div class="p-4 bg-gray-50 rounded-lg">
+                <h4 class="font-medium text-gray-900 mb-1">E-Mail</h4>
+                <a :href="`mailto:${selectedProperty.contact.email}`" class="text-primary-600 hover:text-primary-700">
+                  {{ selectedProperty.contact.email }}
+                </a>
+              </div>
+            </div>
+            
+            <div class="flex flex-col sm:flex-row gap-4">
+              <router-link to="/kontakt" class="btn-primary flex-1 text-center">
+                Besichtigung vereinbaren
+              </router-link>
+              <button class="btn-secondary">
+                Weitere Informationen
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
     
     <!-- Company Detail Modal -->
     <div 

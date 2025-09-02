@@ -4,6 +4,7 @@ import Services from '../views/Services.vue'
 import Catalog from '../views/Catalog.vue'
 import About from '../views/About.vue'
 import Contact from '../views/Contact.vue'
+import Terms from '../views/Terms.vue'
 
 const routes = [
   {
@@ -30,6 +31,11 @@ const routes = [
     path: '/kontakt',
     name: 'Contact',
     component: Contact
+  },
+  {
+    path: '/agb',
+    name: 'Terms',
+    component: Terms
   }
 ]
 
